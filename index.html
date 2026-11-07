@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aurora Hall Theatre - Tickets</title>
+</head>
+<body>
+  <header class="site-header">
+    <h1>Aurora Hall Theatre</h1>
+    <p>Click a seat to inspect it, then press ADD TO CART.</p>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-labelledby="map-heading">
+      <h2 id="map-heading">Venue map</h2>
+
+      <div class="map-controls" id="map-controls">
+        <div class="ctrl-group">
+          <button type="button" class="ctrl" data-action="zoom-in"><span aria-hidden="true">+</span> Zoom In</button>
+          <button type="button" class="ctrl" data-action="zoom-out"><span aria-hidden="true">&minus;</span> Zoom Out</button>
+        </div>
+        <div class="ctrl-group">
+          <button type="button" class="ctrl" data-action="up"><span aria-hidden="true">&uarr;</span> Move Up</button>
+          <button type="button" class="ctrl" data-action="down"><span aria-hidden="true">&darr;</span> Move Down</button>
+          <button type="button" class="ctrl" data-action="left"><span aria-hidden="true">&larr;</span> Move Left</button>
+          <button type="button" class="ctrl" data-action="right"><span aria-hidden="true">&rarr;</span> Move Right</button>
+        </div>
+        <div class="ctrl-group">
+          <button type="button" class="ctrl ctrl-reset" data-action="reset"><span aria-hidden="true">&#8634;</span> Reset / Center</button>
+        </div>
+      </div>
+
+      <div class="map-viewport" id="viewport">
+        <div class="map" id="map">
+          <div class="stage">STAGE</div>
+          <div class="hall">
+            <div class="door">ENTRANCE WEST</div>
+            <div class="hall-main" id="hall-main"></div>
+            <div class="door">ENTRANCE EAST</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <ul>
+          <li><span class="swatch seat-available"></span> Available</li>
+          <li><span class="swatch seat-inspected"></span> Inspected</li>
+          <li><span class="swatch seat-in-cart">&#10003;</span> In cart</li>
+          <li><span class="swatch seat-unavailable">&times;</span> Unavailable</li>
+        </ul>
+        <ul id="legend-tiers"></ul>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel" aria-labelledby="details-heading">
+        <h2 id="details-heading">Seat details</h2>
+        <p class="muted" id="details-empty">Select a seat on the map to see its details and price.</p>
+
+        <div id="details-body" hidden>
+          <dl class="details">
+            <dt>Section</dt><dd id="d-section"></dd>
+            <dt>Row</dt><dd id="d-row"></dd>
+            <dt>Seat</dt><dd id="d-seat"></dd>
+            <dt>Category</dt><dd id="d-tier"></dd>
+            <dt>Price</dt><dd id="d-price" class="price"></dd>
+            <dt>Status</dt><dd id="d-status"></dd>
+          </dl>
+          <p class="message" id="details-message" role="status"></p>
+          <div class="actions">
+            <button type="button" class="btn btn-primary" id="btn-add">ADD TO CART</button>
+            <button type="button" class="btn" id="btn-remove-selected" hidden>Remove from cart</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="cart-heading">
+        <h2 id="cart-heading">Your cart <span class="count" id="cart-count">0 tickets</span></h2>
+        <p class="muted" id="cart-empty">Your cart is empty.</p>
+        <ul class="cart-list" id="cart-list"></ul>
+        <div class="cart-total">
+          <span>Total</span>
+          <strong id="cart-total">0.00 AZN</strong>
+        </div>
+        <button type="button" class="btn btn-link" id="btn-clear" hidden>Clear cart</button>
+      </section>
+    </aside>
+  </main>
+
+</body>
+</html>

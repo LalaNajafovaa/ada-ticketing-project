@@ -1,8 +1,8 @@
-# ADA Hall Theatre - Ticket Selection
- project for Web & Mobile I: an interactive front-end ticket selection page for a theatre.
+# Aurora Hall Theatre - Ticket Selection
 
-Built with plain HTML, CSS and JavaScript. 
-No backend
+Student project for Web & Mobile I: an interactive front-end ticket selection page for a theatre.
+
+Built with plain HTML, CSS and JavaScript. No backend.
 
 ## Plan
 
