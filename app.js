@@ -21,6 +21,7 @@
   const zoomOutBtn = document.querySelector('[data-action="zoom-out"]');
   const addBtn = $('btn-add');
   const removeSelectedBtn = $('btn-remove-selected');
+  const clearBtn = $('btn-clear');
   const cartList = $('cart-list');
 
   const seats = new Map();
@@ -234,6 +235,23 @@
     showDetails({ text: 'Added to your cart.', type: 'ok' });
   }
 
+  function removeFromCart(id) {
+    const index = cart.indexOf(id);
+    if (index === -1) return;
+    cart.splice(index, 1);
+    paint(id);
+    drawCart();
+    if (id === current) showDetails({ text: 'Removed from your cart.', type: 'ok' });
+  }
+
+  function clearCart() {
+    const removed = cart;
+    cart = [];
+    removed.forEach(paint);
+    drawCart();
+    if (current) showDetails();
+  }
+
   function drawCart() {
     cartList.textContent = '';
     let total = 0;
@@ -249,11 +267,17 @@
         make('span', '', `Row ${seat.row} · Seat ${seat.number} · ${seat.tierName}`)
       );
 
-      item.append(info, make('span', 'cart-price', money(seat.price)));
+      const remove = make('button', 'btn', 'Remove');
+      remove.type = 'button';
+      remove.dataset.remove = id;
+      remove.setAttribute('aria-label', `Remove ${seat.section} row ${seat.row} seat ${seat.number}`);
+
+      item.append(info, make('span', 'cart-price', money(seat.price)), remove);
       cartList.appendChild(item);
     });
 
     $('cart-empty').hidden = cart.length > 0;
+    clearBtn.hidden = cart.length === 0;
     $('cart-count').textContent = `${cart.length} ${cart.length === 1 ? 'ticket' : 'tickets'}`;
     $('cart-total').textContent = money(total);
   }
@@ -341,6 +365,13 @@
     });
 
     addBtn.addEventListener('click', addToCart);
+    removeSelectedBtn.addEventListener('click', () => removeFromCart(current));
+    clearBtn.addEventListener('click', clearCart);
+
+    cartList.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-remove]');
+      if (btn) removeFromCart(btn.dataset.remove);
+    });
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && current) deselect();
