@@ -1,5 +1,6 @@
 (() => {
   const $ = (id) => document.getElementById(id);
+  const money = (n) => n.toFixed(2) + ' AZN';
 
   const make = (tag, className = '', text = '') => {
     const node = document.createElement(tag);
@@ -12,6 +13,16 @@
   const buttons = new Map();
   const sections = new Map(SECTIONS.map((s) => [s.id, s]));
   const soldSeats = new Set(UNAVAILABLE);
+
+  const stateLabels = {
+    available: 'available',
+    inspected: 'available, being inspected',
+    'in-cart': 'in your cart',
+    unavailable: 'unavailable'
+  };
+
+  let cart = [];
+  let current = null;
 
   function createSeats() {
     SECTIONS.forEach((sec) => {
@@ -39,7 +50,6 @@
     btn.type = 'button';
     btn.dataset.id = seat.id;
     btn.style.setProperty('--tier', TIERS[seat.tier].color);
-    btn.textContent = seat.number;
     buttons.set(seat.id, btn);
     return btn;
   }
@@ -90,9 +100,51 @@
     $('hall-main').appendChild(fragment);
   }
 
+  function drawLegend() {
+    const list = $('legend-tiers');
+    Object.values(TIERS).forEach((tier) => {
+      const item = make('li');
+      const dot = make('span', 'tier-dot');
+      dot.style.background = tier.color;
+      item.append(dot, `${tier.name} - ${money(tier.price)}`);
+      list.appendChild(item);
+    });
+  }
+
+  function stateOf(id) {
+    if (seats.get(id).sold) return 'unavailable';
+    if (cart.includes(id)) return 'in-cart';
+    if (id === current) return 'inspected';
+    return 'available';
+  }
+
+  function paint(id) {
+    if (!id || !seats.has(id)) return;
+    const seat = seats.get(id);
+    const btn = buttons.get(id);
+    const state = stateOf(id);
+
+    btn.className = `seat seat-${state}` + (id === current ? ' selected' : '');
+    btn.textContent = state === 'in-cart' ? '✓' : state === 'unavailable' ? '×' : seat.number;
+
+    btn.setAttribute('aria-disabled', String(state === 'unavailable'));
+    btn.setAttribute('aria-pressed', String(id === current));
+    btn.setAttribute(
+      'aria-label',
+      `${seat.section}, row ${seat.row}, seat ${seat.number}, ${seat.tierName}, ${money(seat.price)}, ${stateLabels[state]}`
+    );
+  }
+
+  function paintAll() {
+    seats.forEach((_, id) => paint(id));
+  }
+
   function init() {
     createSeats();
     drawVenue();
+    drawLegend();
+
+    paintAll();
   }
 
   init();
