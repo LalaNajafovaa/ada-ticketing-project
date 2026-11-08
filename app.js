@@ -1,4 +1,5 @@
 (() => {
+  const STORAGE_KEY = 'auroraHall.cart';
   const ZOOM_FACTOR = 1.25;
   const MOVE_BY = 90;
   const MAX_SCALE = 3;
@@ -230,6 +231,7 @@
     }
 
     cart.push(seat.id);
+    saveCart();
     paint(seat.id);
     drawCart();
     showDetails({ text: 'Added to your cart.', type: 'ok' });
@@ -239,6 +241,7 @@
     const index = cart.indexOf(id);
     if (index === -1) return;
     cart.splice(index, 1);
+    saveCart();
     paint(id);
     drawCart();
     if (id === current) showDetails({ text: 'Removed from your cart.', type: 'ok' });
@@ -247,6 +250,7 @@
   function clearCart() {
     const removed = cart;
     cart = [];
+    saveCart();
     removed.forEach(paint);
     drawCart();
     if (current) showDetails();
@@ -280,6 +284,23 @@
     clearBtn.hidden = cart.length === 0;
     $('cart-count').textContent = `${cart.length} ${cart.length === 1 ? 'ticket' : 'tickets'}`;
     $('cart-total').textContent = money(total);
+  }
+
+  function saveCart() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+    } catch (err) {
+      console.warn('Could not save cart', err);
+    }
+  }
+
+  function loadCart() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      return Array.isArray(saved) ? saved : [];
+    } catch (err) {
+      return [];
+    }
   }
 
   function fitScale() {
@@ -389,6 +410,8 @@
     drawVenue();
     drawLegend();
 
+    cart = loadCart();
+    saveCart();
     paintAll();
     drawCart();
     showDetails();
