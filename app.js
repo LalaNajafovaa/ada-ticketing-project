@@ -4,6 +4,7 @@
   const MOVE_BY = 90;
   const MAX_SCALE = 3;
   const MIN_RATIO = 0.7;
+  const DRAG_MIN = 5;
   const PAN_SLACK = 120;
 
   const $ = (id) => document.getElementById(id);
@@ -396,6 +397,60 @@
     if (dx || dy) moveBy(dx, dy);
   }
 
+  function setupMouse() {
+    let drag = null;
+    let ignoreClick = false;
+
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      const box = viewport.getBoundingClientRect();
+      zoomBy(Math.exp(-delta * 0.0018), e.clientX - box.left, e.clientY - box.top);
+    }, { passive: false });
+
+    viewport.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      drag = { id: e.pointerId, x: e.clientX, y: e.clientY, fromX: view.x, fromY: view.y, active: false };
+    });
+
+    viewport.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x;
+      const dy = e.clientY - drag.y;
+
+      if (!drag.active) {
+        if (Math.hypot(dx, dy) < DRAG_MIN) return;
+        drag.active = true;
+        viewport.setPointerCapture(e.pointerId);
+        viewport.classList.add('dragging');
+      }
+
+      view.x = drag.fromX + dx;
+      view.y = drag.fromY + dy;
+      moved = true;
+      applyView();
+    });
+
+    const endDrag = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (drag.active) {
+        ignoreClick = true;
+        setTimeout(() => { ignoreClick = false; }, 0);
+      }
+      drag = null;
+      viewport.classList.remove('dragging');
+    };
+    viewport.addEventListener('pointerup', endDrag);
+    viewport.addEventListener('pointercancel', endDrag);
+
+    viewport.addEventListener('click', (e) => {
+      if (ignoreClick) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    }, true);
+  }
+
   function bindEvents() {
     mapEl.addEventListener('click', (e) => {
       const btn = e.target.closest('.seat');
@@ -446,6 +501,8 @@
     } else {
       window.addEventListener('resize', onResize);
     }
+
+    setupMouse();
   }
 
   function init() {
