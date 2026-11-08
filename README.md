@@ -1,4 +1,4 @@
-# Aurora Hall Theatre - Ticket Selection
+# ADA Hall Theatre - Ticket Selection
 
 Student project for Web & Mobile I: an interactive front-end ticket selection page for a theatre.
 
