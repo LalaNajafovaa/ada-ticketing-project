@@ -21,6 +21,7 @@
   const zoomOutBtn = document.querySelector('[data-action="zoom-out"]');
   const addBtn = $('btn-add');
   const removeSelectedBtn = $('btn-remove-selected');
+  const cartList = $('cart-list');
 
   const seats = new Map();
   const buttons = new Map();
@@ -214,6 +215,49 @@
     removeSelectedBtn.hidden = !inCart;
   }
 
+  function addToCart() {
+    if (!current) return;
+    const seat = seats.get(current);
+
+    if (seat.sold) {
+      showDetails({ text: 'This seat is unavailable and cannot be added.', type: 'error' });
+      return;
+    }
+    if (cart.includes(seat.id)) {
+      showDetails({ text: 'This seat is already in your cart.', type: 'error' });
+      return;
+    }
+
+    cart.push(seat.id);
+    paint(seat.id);
+    drawCart();
+    showDetails({ text: 'Added to your cart.', type: 'ok' });
+  }
+
+  function drawCart() {
+    cartList.textContent = '';
+    let total = 0;
+
+    cart.forEach((id) => {
+      const seat = seats.get(id);
+      total += seat.price;
+
+      const item = make('li', 'cart-item');
+      const info = make('div', 'cart-info');
+      info.append(
+        make('strong', '', seat.section),
+        make('span', '', `Row ${seat.row} · Seat ${seat.number} · ${seat.tierName}`)
+      );
+
+      item.append(info, make('span', 'cart-price', money(seat.price)));
+      cartList.appendChild(item);
+    });
+
+    $('cart-empty').hidden = cart.length > 0;
+    $('cart-count').textContent = `${cart.length} ${cart.length === 1 ? 'ticket' : 'tickets'}`;
+    $('cart-total').textContent = money(total);
+  }
+
   function fitScale() {
     const s = Math.min(
       (viewport.clientWidth - 16) / mapEl.offsetWidth,
@@ -296,6 +340,8 @@
       if (btn) runAction(btn.dataset.action);
     });
 
+    addBtn.addEventListener('click', addToCart);
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && current) deselect();
     });
@@ -313,6 +359,7 @@
     drawLegend();
 
     paintAll();
+    drawCart();
     showDetails();
 
     bindEvents();
