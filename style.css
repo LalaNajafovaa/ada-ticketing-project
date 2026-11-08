@@ -24,6 +24,7 @@ h1, h2, h3, h4 { margin: 0; }
 .site-header h1 { font-size: 1.5rem; }
 .site-header p { margin: 4px 0 0; color: #d1d5db; }
 
+.noscript { margin: 16px; padding: 12px; background: #fee2e2; border-radius: 8px; }
 .muted { margin: 0; color: var(--muted); }
 
 .layout {
@@ -257,6 +258,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   .layout { grid-template-columns: 1fr; padding: 10px; }
   .side { position: static; }
   .map-viewport { height: clamp(270px, 62vw, 520px); }
+  .cart-list { max-height: none; }
 }
 
 @media (max-width: 520px) {
