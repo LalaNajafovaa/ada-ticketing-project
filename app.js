@@ -1,5 +1,11 @@
 (() => {
+  const ZOOM_FACTOR = 1.25;
+  const MOVE_BY = 90;
+  const MAX_SCALE = 3;
+  const MIN_RATIO = 0.7;
+
   const $ = (id) => document.getElementById(id);
+  const clamp = (n, lo, hi) => Math.min(Math.max(n, lo), hi);
   const money = (n) => n.toFixed(2) + ' AZN';
 
   const make = (tag, className = '', text = '') => {
@@ -9,7 +15,10 @@
     return node;
   };
 
+  const viewport = $('viewport');
   const mapEl = $('map');
+  const zoomInBtn = document.querySelector('[data-action="zoom-in"]');
+  const zoomOutBtn = document.querySelector('[data-action="zoom-out"]');
   const addBtn = $('btn-add');
   const removeSelectedBtn = $('btn-remove-selected');
 
@@ -27,6 +36,8 @@
 
   let cart = [];
   let current = null;
+  let moved = false;
+  const view = { x: 0, y: 0, scale: 1 };
 
   function createSeats() {
     SECTIONS.forEach((sec) => {
@@ -203,15 +214,97 @@
     removeSelectedBtn.hidden = !inCart;
   }
 
+  function fitScale() {
+    const s = Math.min(
+      (viewport.clientWidth - 16) / mapEl.offsetWidth,
+      (viewport.clientHeight - 16) / mapEl.offsetHeight,
+      1.2
+    );
+    return Math.max(s, 0.1);
+  }
+
+  const minScale = () => fitScale() * MIN_RATIO;
+
+  function applyView() {
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const mw = mapEl.offsetWidth * view.scale;
+    const mh = mapEl.offsetHeight * view.scale;
+
+    view.x = clamp(view.x, Math.min(0, vw - mw), Math.max(0, vw - mw));
+    view.y = clamp(view.y, Math.min(0, vh - mh), Math.max(0, vh - mh));
+    mapEl.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
+
+    zoomInBtn.disabled = view.scale >= MAX_SCALE - 0.001;
+    zoomOutBtn.disabled = view.scale <= minScale() + 0.001;
+  }
+
+  function zoomBy(factor, cx, cy) {
+    const next = clamp(view.scale * factor, minScale(), MAX_SCALE);
+    const ratio = next / view.scale;
+    view.x = cx - (cx - view.x) * ratio;
+    view.y = cy - (cy - view.y) * ratio;
+    view.scale = next;
+    moved = true;
+    applyView();
+  }
+
+  function moveBy(dx, dy) {
+    view.x += dx;
+    view.y += dy;
+    moved = true;
+    applyView();
+  }
+
+  function resetView() {
+    view.scale = fitScale();
+    view.x = (viewport.clientWidth - mapEl.offsetWidth * view.scale) / 2;
+    view.y = (viewport.clientHeight - mapEl.offsetHeight * view.scale) / 2;
+    moved = false;
+    applyView();
+  }
+
+  function runAction(action) {
+    const cx = viewport.clientWidth / 2;
+    const cy = viewport.clientHeight / 2;
+    if (action === 'zoom-in') zoomBy(ZOOM_FACTOR, cx, cy);
+    else if (action === 'zoom-out') zoomBy(1 / ZOOM_FACTOR, cx, cy);
+    else if (action === 'up') moveBy(0, MOVE_BY);
+    else if (action === 'down') moveBy(0, -MOVE_BY);
+    else if (action === 'left') moveBy(MOVE_BY, 0);
+    else if (action === 'right') moveBy(-MOVE_BY, 0);
+    else if (action === 'reset') resetView();
+  }
+
+  function onResize() {
+    if (!moved) {
+      resetView();
+      return;
+    }
+    view.scale = clamp(view.scale, minScale(), MAX_SCALE);
+    applyView();
+  }
+
   function bindEvents() {
     mapEl.addEventListener('click', (e) => {
       const btn = e.target.closest('.seat');
       if (btn) inspect(btn.dataset.id);
     });
 
+    $('map-controls').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (btn) runAction(btn.dataset.action);
+    });
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && current) deselect();
     });
+
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(onResize).observe(viewport);
+    } else {
+      window.addEventListener('resize', onResize);
+    }
   }
 
   function init() {
@@ -223,6 +316,7 @@
     showDetails();
 
     bindEvents();
+    resetView();
   }
 
   init();
