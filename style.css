@@ -1,0 +1,172 @@
+:root {
+  --bg: #f3f4f6;
+  --ink: #111827;
+  --muted: #6b7280;
+  --line: #d1d5db;
+  --accent: #2563eb;
+  --seat: 28px;
+  --gap: 4px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.4;
+}
+
+h1, h2, h3, h4 { margin: 0; }
+
+.site-header { padding: 16px 20px; background: #1f2937; color: #fff; }
+.site-header h1 { font-size: 1.5rem; }
+.site-header p { margin: 4px 0 0; color: #d1d5db; }
+
+.muted { margin: 0; color: var(--muted); }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 16px;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+}
+.panel h2 { margin-bottom: 10px; font-size: 1.1rem; }
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-self: start;
+  position: sticky;
+  top: 16px;
+}
+
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.map-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+.ctrl-group { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.ctrl {
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f9fafb;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.ctrl:hover:not(:disabled) { background: #e5e7eb; }
+.ctrl:disabled { opacity: 0.45; cursor: not-allowed; }
+.ctrl-reset { background: #eff6ff; border-color: #93c5fd; }
+
+.map-viewport {
+  position: relative;
+  height: clamp(380px, 68vh, 720px);
+  overflow: hidden;
+  background: #e8dcc6;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: max-content;
+  padding: 24px;
+  transform-origin: 0 0;
+}
+
+.stage {
+  width: 420px;
+  margin: 0 auto 20px;
+  padding: 14px 0;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.4em;
+  color: #fff;
+  background: #4b5563;
+  border-radius: 6px 6px 40px 40px;
+}
+
+.hall { display: flex; align-items: stretch; gap: 16px; }
+.hall-main { display: flex; flex-direction: column; align-items: center; gap: 28px; }
+
+.door {
+  align-self: center;
+  writing-mode: vertical-rl;
+  padding: 18px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #fff;
+  background: #7c4a21;
+  border-radius: 6px;
+}
+
+.details { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0 0 10px; }
+.details dt { color: var(--muted); }
+.details dd { margin: 0; font-weight: 600; }
+.price { font-size: 1.3rem; }
+
+.message { min-height: 1.4em; margin: 0 0 10px; font-size: 0.9rem; color: #374151; }
+.message.error { color: #b91c1c; font-weight: 600; }
+.message.ok { color: #15803d; font-weight: 600; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.btn {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f9fafb;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn:hover { background: #e5e7eb; }
+.btn-primary { flex: 1 1 150px;background: var(--accent); border-color: var(--accent); color: #fff; letter-spacing: 0.04em; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-primary.disabled { background: #9ca3af; border-color: #9ca3af; cursor: not-allowed; }
+.btn-link {
+  min-height: 36px;
+  margin-top: 8px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: #b91c1c;
+  text-decoration: underline;
+}
+
+.count { margin-left: 6px; font-size: 0.8rem; font-weight: 500; color: var(--muted); }
+
+.cart-list { max-height: 280px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.cart-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+.cart-info { display: flex; flex-direction: column; min-width: 0; }
+.cart-info span { font-size: 0.8rem; color: var(--muted); }
+.cart-price { font-weight: 700; }
+.cart-item .btn { min-height: 36px; padding: 4px 10px; font-size: 0.85rem; }
+
+.cart-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; font-size: 1.1rem; }
+.cart-total strong { font-size: 1.4rem; }
