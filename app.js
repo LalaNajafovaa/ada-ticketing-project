@@ -10,6 +10,8 @@
   };
 
   const mapEl = $('map');
+  const addBtn = $('btn-add');
+  const removeSelectedBtn = $('btn-remove-selected');
 
   const seats = new Map();
   const buttons = new Map();
@@ -149,7 +151,14 @@
     showDetails();
   }
 
-  function showDetails() {
+  function deselect() {
+    const previous = current;
+    current = null;
+    paint(previous);
+    showDetails();
+  }
+
+  function showDetails(note) {
     const empty = $('details-empty');
     const body = $('details-body');
 
@@ -160,6 +169,9 @@
     }
 
     const seat = seats.get(current);
+    const inCart = cart.includes(current);
+    const canAdd = !seat.sold && !inCart;
+
     empty.hidden = true;
     body.hidden = false;
 
@@ -168,13 +180,37 @@
     $('d-seat').textContent = seat.number;
     $('d-tier').textContent = seat.tierName;
     $('d-price').textContent = money(seat.price);
-    $('d-status').textContent = seat.sold ? 'Unavailable' : 'Available';
+    $('d-status').textContent = seat.sold ? 'Unavailable' : inCart ? 'In your cart' : 'Available';
+
+    let text = 'Not in your cart yet. Press ADD TO CART to add it.';
+    let type = '';
+    if (note) {
+      text = note.text;
+      type = note.type;
+    } else if (seat.sold) {
+      text = 'This seat is unavailable and cannot be added.';
+      type = 'error';
+    } else if (inCart) {
+      text = 'This seat is already in your cart.';
+    }
+
+    const message = $('details-message');
+    message.textContent = text;
+    message.className = type ? `message ${type}` : 'message';
+
+    addBtn.setAttribute('aria-disabled', String(!canAdd));
+    addBtn.classList.toggle('disabled', !canAdd);
+    removeSelectedBtn.hidden = !inCart;
   }
 
   function bindEvents() {
     mapEl.addEventListener('click', (e) => {
       const btn = e.target.closest('.seat');
       if (btn) inspect(btn.dataset.id);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && current) deselect();
     });
   }
 
