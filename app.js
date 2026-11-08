@@ -4,6 +4,7 @@
   const MOVE_BY = 90;
   const MAX_SCALE = 3;
   const MIN_RATIO = 0.7;
+  const PAN_SLACK = 120;
 
   const $ = (id) => document.getElementById(id);
   const clamp = (n, lo, hi) => Math.min(Math.max(n, lo), hi);
@@ -297,7 +298,13 @@
   function loadCart() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      return Array.isArray(saved) ? saved : [];
+      if (!Array.isArray(saved)) return [];
+      const seen = new Set();
+      return saved.filter((id) => {
+        const ok = typeof id === 'string' && seats.has(id) && !seats.get(id).sold && !seen.has(id);
+        if (ok) seen.add(id);
+        return ok;
+      });
     } catch (err) {
       return [];
     }
@@ -320,8 +327,8 @@
     const mw = mapEl.offsetWidth * view.scale;
     const mh = mapEl.offsetHeight * view.scale;
 
-    view.x = clamp(view.x, Math.min(0, vw - mw), Math.max(0, vw - mw));
-    view.y = clamp(view.y, Math.min(0, vh - mh), Math.max(0, vh - mh));
+    view.x = clamp(view.x, Math.min(0, vw - mw) - PAN_SLACK, Math.max(0, vw - mw) + PAN_SLACK);
+    view.y = clamp(view.y, Math.min(0, vh - mh) - PAN_SLACK, Math.max(0, vh - mh) + PAN_SLACK);
     mapEl.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
 
     zoomInBtn.disabled = view.scale >= MAX_SCALE - 0.001;
@@ -374,6 +381,21 @@
     applyView();
   }
 
+  function bringIntoView(node) {
+    const v = viewport.getBoundingClientRect();
+    const r = node.getBoundingClientRect();
+    const pad = 24;
+    let dx = 0;
+    let dy = 0;
+
+    if (r.left < v.left + pad) dx = v.left + pad - r.left;
+    else if (r.right > v.right - pad) dx = v.right - pad - r.right;
+    if (r.top < v.top + pad) dy = v.top + pad - r.top;
+    else if (r.bottom > v.bottom - pad) dy = v.bottom - pad - r.bottom;
+
+    if (dx || dy) moveBy(dx, dy);
+  }
+
   function bindEvents() {
     mapEl.addEventListener('click', (e) => {
       const btn = e.target.closest('.seat');
@@ -396,6 +418,27 @@
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && current) deselect();
+    });
+
+    viewport.addEventListener('scroll', () => {
+      viewport.scrollLeft = 0;
+      viewport.scrollTop = 0;
+    });
+
+    viewport.addEventListener('focusin', (e) => {
+      viewport.scrollLeft = 0;
+      viewport.scrollTop = 0;
+      const btn = e.target.closest('.seat');
+      if (btn) bringIntoView(btn);
+    });
+
+    window.addEventListener('storage', (e) => {
+      if (e.key !== STORAGE_KEY) return;
+      const before = cart;
+      cart = loadCart();
+      [...before, ...cart].forEach(paint);
+      drawCart();
+      showDetails();
     });
 
     if ('ResizeObserver' in window) {
