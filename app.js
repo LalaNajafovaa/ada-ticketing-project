@@ -9,6 +9,8 @@
     return node;
   };
 
+  const mapEl = $('map');
+
   const seats = new Map();
   const buttons = new Map();
   const sections = new Map(SECTIONS.map((s) => [s.id, s]));
@@ -139,12 +141,52 @@
     seats.forEach((_, id) => paint(id));
   }
 
+  function inspect(id) {
+    const previous = current;
+    current = id;
+    paint(previous);
+    paint(id);
+    showDetails();
+  }
+
+  function showDetails() {
+    const empty = $('details-empty');
+    const body = $('details-body');
+
+    if (!current) {
+      empty.hidden = false;
+      body.hidden = true;
+      return;
+    }
+
+    const seat = seats.get(current);
+    empty.hidden = true;
+    body.hidden = false;
+
+    $('d-section').textContent = seat.section;
+    $('d-row').textContent = seat.row;
+    $('d-seat').textContent = seat.number;
+    $('d-tier').textContent = seat.tierName;
+    $('d-price').textContent = money(seat.price);
+    $('d-status').textContent = seat.sold ? 'Unavailable' : 'Available';
+  }
+
+  function bindEvents() {
+    mapEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.seat');
+      if (btn) inspect(btn.dataset.id);
+    });
+  }
+
   function init() {
     createSeats();
     drawVenue();
     drawLegend();
 
     paintAll();
+    showDetails();
+
+    bindEvents();
   }
 
   init();
